@@ -1,9 +1,9 @@
 """
 拡張子が.pyのファイルの変更（保存）を検知して、versionを取得する
 """
+from pre_pull_baseimage import pre_pull_excution
 import time
-import subprocess
-from watchdog.observers import Observer
+from watchdog.observers.polling import PollingObserver
 from watchdog.events import PatternMatchingEventHandler
 
 
@@ -30,13 +30,13 @@ class WatchdogHandler(PatternMatchingEventHandler):
         return func(*args)
 
     def on_modified(self, event):
-        print(event)
+        #print(event)
         self.__callback_handler(self.callback)
 
 
 def watch(path, callback, extensions):
     event_handler = WatchdogHandler(callback, extensions)
-    observer = Observer()
+    observer = PollingObserver()
     observer.schedule(event_handler, path, recursive=True)
     observer.start()
     try:
@@ -47,21 +47,7 @@ def watch(path, callback, extensions):
     observer.join()
 
 
-def say_hello():
-    print("pythonファイルが保存されました。")
-    version = get_pyversion()
-    print(f"version : {version}")
-
-
-def get_pyversion():
-    cmd = "python -V"
-    process = (subprocess.Popen(cmd, 
-                                stdout=subprocess.PIPE,
-                                shell=True).communicate()[0]).decode('utf-8')
-    return process
-
-
 if __name__ == "__main__":
-    dir_to_watch = ".."
+    dir_to_watch = "."
     extensions = ["*.py"]
-    watch(dir_to_watch, say_hello, extensions)
+    watch(dir_to_watch, pre_pull_excution.main, extensions)
